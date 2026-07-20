@@ -12,3 +12,6 @@ Sales Dashboard visualizing FY2025 sales data across zones and product categorie
 - Metric pills: Win Rate, Avg Deal Size, Pipeline Value as derived/estimated metrics.
 - Fully responsive canvas redraw on window resize.
 - Dark, glassmorphism-style UI with a custom color system via CSS variables.
+
+  # Live Dashboard
+  https://surajrbekal.github.io/Sales-Dashboard/
