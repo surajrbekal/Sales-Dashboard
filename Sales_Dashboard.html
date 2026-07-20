@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Performance Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0F2C;--card:#111936;--card2:#141b3e;
+  --cyan:#00D4FF;--green:#39FF8F;--amber:#FFB627;--coral:#FF4E5B;
+  --white:#FFFFFF;--muted:#8A9BC7;--border:#1e2a52;
+  --font:'Rajdhani',sans-serif;
+}
+body{background:var(--bg);color:var(--white);font-family:var(--font);min-width:1280px;padding:0}
+.dashboard{display:flex;flex-direction:column;gap:0;min-height:100vh}
+
+/* TOP BAR */
+.topbar{
+  background:linear-gradient(135deg,#0d1535 0%,#111936 100%);
+  border-bottom:1px solid var(--border);
+  padding:10px 24px;
+  display:flex;align-items:center;gap:16px;
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:200px}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--cyan),#0066aa);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.brand-name{font-family:'Exo 2',sans-serif;font-size:15px;font-weight:700;color:var(--white);line-height:1.1}
+.brand-name span{font-size:10px;color:var(--muted);font-weight:400;display:block;text-transform:uppercase;letter-spacing:1.5px}
+select.product-select{
+  background:#1a2550;border:1px solid var(--border);color:var(--cyan);
+  font-family:var(--font);font-size:13px;font-weight:600;padding:6px 28px 6px 12px;
+  border-radius:6px;cursor:pointer;outline:none;
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2300D4FF'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.divider-v{width:1px;height:40px;background:var(--border)}
+
+/* KPI STRIP */
+.kpi-strip{display:flex;align-items:center;gap:12px;flex:1}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:8px 16px;display:flex;flex-direction:column;gap:2px;min-width:150px;
+  position:relative;overflow:hidden;
+}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--cyan))}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.kpi-value{font-size:22px;font-weight:700;color:var(--white);line-height:1.1}
+.kpi-value span{font-size:12px;color:var(--muted);font-weight:400}
+.kpi-delta{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600}
+.delta-up{color:var(--green)}
+.delta-down{color:var(--coral)}
+.delta-arrow{font-size:10px}
+
+/* CONVERSION HIGHLIGHT BOX */
+.conv-box{
+  background:linear-gradient(135deg,#1a0d2e,#261040);
+  border:1px solid #6b21a8;border-radius:10px;
+  padding:8px 20px;min-width:120px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.conv-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#9333ea,#c084fc)}
+.conv-label{font-size:9px;color:#c084fc;text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.conv-num{font-size:32px;font-weight:700;color:#e879f9;line-height:1;font-family:'Exo 2',sans-serif}
+.conv-sub{font-size:10px;color:#9d4edd}
+
+/* METRIC PILLS */
+.metric-pills{display:flex;flex-direction:column;gap:5px;margin-left:auto}
+.pill{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:5px 14px;display:flex;align-items:center;gap:8px;min-width:190px;
+}
+.pill-icon{font-size:14px;width:22px;text-align:center}
+.pill-text{flex:1;font-size:11px;color:var(--muted);font-weight:500}
+.pill-val{font-size:13px;font-weight:700;color:var(--white)}
+
+/* SECTION DIVIDER */
+.section-div{height:1px;background:var(--border);margin:0 24px}
+
+/* ROW 2 — GAUGES */
+.row2{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:12px 24px}
+.gauge-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:border-color .3s;
+}
+.gauge-card:hover{border-color:var(--cyan)}
+.gauge-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;align-self:flex-start}
+canvas.gauge{display:block}
+
+/* ROW 3 — CHARTS */
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 24px 12px}
+.chart-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px;display:flex;flex-direction:column;gap:10px;
+  transition:border-color .3s;
+}
+.chart-card:hover{border-color:var(--cyan)}
+.chart-title{font-size:12px;color:var(--white);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.chart-sub{font-size:10px;color:var(--muted)}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* TOOLTIP */
+.tooltip{
+  position:fixed;background:#1e2a52;border:1px solid var(--cyan);
+  border-radius:6px;padding:8px 12px;font-size:12px;color:#fff;
+  pointer-events:none;z-index:999;display:none;min-width:120px;
+  box-shadow:0 4px 20px rgba(0,212,255,.2);
+}
+
+/* GAUGE VALUE DISPLAY */
+.gauge-val{font-size:28px;font-weight:700;color:var(--white);font-family:'Exo 2',sans-serif;line-height:1}
+.gauge-sub{font-size:10px;color:var(--muted)}
+
+/* FOOTER */
+.footer{
+  text-align:center;padding:8px;font-size:10px;color:var(--muted);
+  border-top:1px solid var(--border);letter-spacing:1px;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#0a0f2c}
+::-webkit-scrollbar-thumb{background:#1e2a52;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div id="tooltip" class="tooltip"></div>
+
+<div class="dashboard">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">SRB</div>
+    <div class="brand-name">Suraj R Bekal Creations
+      <span>Analytics Platform</span>
+    </div>
+  </div>
+  <select class="product-select" id="productSelect" onchange="switchProduct(this.value)">
+    <option value="0">All Products</option>
+    <option value="1">Furniture</option>
+    <option value="2">Electronics</option>
+    <option value="3">Stationery & Office</option>
+  </select>
+
+  <div class="divider-v"></div>
+
+  <div class="kpi-strip">
+    <div class="kpi-card" style="--accent:var(--cyan)">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value"><span id="kRevenue">₹0</span></div>
+      <div class="kpi-delta" id="kRevDelta"></div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--green)">
+      <div class="kpi-label">Units Sold</div>
+      <div class="kpi-value"><span id="kUnits">0</span></div>
+      <div class="kpi-delta" id="kUnitsDelta"></div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--amber)">
+      <div class="kpi-label">Net Gain</div>
+      <div class="kpi-value"><span id="kGain">₹0</span></div>
+      <div class="kpi-delta" id="kGainDelta"></div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--coral)">
+      <div class="kpi-label">Transactions</div>
+      <div class="kpi-value"><span id="kTxn">0</span></div>
+      <div class="kpi-delta" id="kTxnDelta"></div>
+    </div>
+
+    <div class="conv-box">
+      <div class="conv-label">Margin Rate</div>
+      <div class="conv-num" id="kMargin">0%</div>
+      <div class="conv-sub">Net Gain / Revenue</div>
+    </div>
+
+    <div class="metric-pills">
+      <div class="pill">
+        <div class="pill-icon" style="color:var(--amber)">🏆</div>
+        <div class="pill-text">Win Rate</div>
+        <div class="pill-val" id="pillWin">—</div>
+      </div>
+      <div class="pill">
+        <div class="pill-icon" style="color:var(--cyan)">💲</div>
+        <div class="pill-text">Avg Deal Size</div>
+        <div class="pill-val" id="pillAvg">—</div>
+      </div>
+      <div class="pill">
+        <div class="pill-icon" style="color:var(--green)">📊</div>
+        <div class="pill-text">Pipeline Value</div>
+        <div class="pill-val" id="pillPipeline">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section-div"></div>
+
+<!-- ROW 2: GAUGES -->
+<div class="row2">
+  <div class="gauge-card">
+    <div class="gauge-title">Sales Performance Score</div>
+    <canvas id="gPerf" width="200" height="200" class="gauge"></canvas>
+    <div class="gauge-val" id="gPerfVal">0</div>
+    <div class="gauge-sub">out of 100</div>
+  </div>
+  <div class="gauge-card">
+    <div class="gauge-title">Revenue by Zone</div>
+    <canvas id="gDonut" width="200" height="200" class="gauge"></canvas>
+    <div class="legend" id="donutLegend" style="justify-content:center"></div>
+  </div>
+  <div class="gauge-card" style="width:100%">
+    <div class="gauge-title">Lead Quality Index</div>
+    <canvas id="gLead" width="380" height="100" class="gauge" style="width:100%;max-width:380px"></canvas>
+    <div class="gauge-val" id="gLeadVal">0</div>
+    <div class="gauge-sub">Score (-100 to 100)</div>
+  </div>
+  <div class="gauge-card">
+    <div class="gauge-title">Target Achievement</div>
+    <canvas id="gTarget" width="200" height="130" class="gauge"></canvas>
+    <div class="gauge-val" id="gTargetVal">0%</div>
+    <div class="gauge-sub">of ₹3,20,000 quota</div>
+  </div>
+</div>
+
+<div class="section-div"></div>
+
+<!-- ROW 3: CHARTS -->
+<div class="row3">
+  <div class="chart-card">
+    <div>
+      <div class="chart-title">Revenue by Zone</div>
+      <div class="chart-sub">Stacked — New · Upsell · Renewal · Partner</div>
+    </div>
+    <div class="legend" id="stackLegend"></div>
+    <canvas id="cStack" width="380" height="220" style="width:100%"></canvas>
+  </div>
+  <div class="chart-card">
+    <div>
+      <div class="chart-title">Monthly Revenue Trend</div>
+      <div class="chart-sub">Jan–Dec 2025</div>
+    </div>
+    <canvas id="cLine" width="380" height="230" style="width:100%"></canvas>
+  </div>
+  <div class="chart-card">
+    <div>
+      <div class="chart-title">Monthly Transactions</div>
+      <div class="chart-sub">Orders count per month</div>
+    </div>
+    <canvas id="cBar" width="380" height="230" style="width:100%"></canvas>
+  </div>
+</div>
+
+<div class="footer">SALESCORE ANALYTICS · FY 2025 · DATA REFRESHED IN REAL-TIME</div>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const RAW=[
+  {mo:8,zone:"South",dept:"Furniture",rev:1553,units:1,gain:292},
+  {mo:3,zone:"East",dept:"Furniture",rev:1186,units:12,gain:123},
+  {mo:5,zone:"East",dept:"Electronics",rev:1441,units:2,gain:304},
+  {mo:8,zone:"South",dept:"Electronics",rev:2995,units:9,gain:260},
+  {mo:6,zone:"East",dept:"Stationery",rev:4413,units:2,gain:285},
+  {mo:5,zone:"South",dept:"Furniture",rev:3318,units:4,gain:410},
+  {mo:3,zone:"North",dept:"Furniture",rev:4028,units:4,gain:422},
+  {mo:1,zone:"South",dept:"Stationery",rev:1543,units:7,gain:252},
+  {mo:10,zone:"South",dept:"Office Supplies",rev:4767,units:4,gain:534},
+  {mo:7,zone:"East",dept:"Office Supplies",rev:3543,units:13,gain:339},
+  {mo:6,zone:"North",dept:"Stationery",rev:3898,units:8,gain:912},
+  {mo:4,zone:"South",dept:"Furniture",rev:4675,units:12,gain:364},
+  {mo:7,zone:"South",dept:"Electronics",rev:3039,units:10,gain:358},
+  {mo:6,zone:"South",dept:"Furniture",rev:3921,units:9,gain:480},
+  {mo:10,zone:"East",dept:"Electronics",rev:1273,units:2,gain:289},
+  {mo:7,zone:"West",dept:"Stationery",rev:1939,units:11,gain:382},
+  {mo:2,zone:"South",dept:"Electronics",rev:1258,units:15,gain:113},
+  {mo:11,zone:"North",dept:"Furniture",rev:4720,units:3,gain:677},
+  {mo:11,zone:"East",dept:"Furniture",rev:4960,units:7,gain:275},
+  {mo:3,zone:"North",dept:"Furniture",rev:3139,units:3,gain:675},
+  {mo:10,zone:"East",dept:"Furniture",rev:4506,units:7,gain:288},
+  {mo:9,zone:"East",dept:"Office Supplies",rev:1753,units:8,gain:282},
+  {mo:6,zone:"West",dept:"Electronics",rev:4789,units:14,gain:1087},
+  {mo:1,zone:"East",dept:"Furniture",rev:1693,units:4,gain:180},
+  {mo:11,zone:"North",dept:"Electronics",rev:3852,units:2,gain:280},
+  {mo:7,zone:"North",dept:"Office Supplies",rev:4975,units:11,gain:840},
+  {mo:3,zone:"West",dept:"Office Supplies",rev:2535,units:10,gain:487},
+  {mo:2,zone:"South",dept:"Furniture",rev:3490,units:5,gain:407},
+  {mo:1,zone:"West",dept:"Electronics",rev:2361,units:4,gain:225},
+  {mo:8,zone:"North",dept:"Electronics",rev:217,units:8,gain:44},
+  {mo:5,zone:"South",dept:"Electronics",rev:2593,units:7,gain:623},
+  {mo:1,zone:"East",dept:"Office Supplies",rev:3085,units:5,gain:198},
+  {mo:8,zone:"South",dept:"Stationery",rev:1327,units:7,gain:227},
+  {mo:10,zone:"South",dept:"Electronics",rev:3951,units:7,gain:945},
+  {mo:8,zone:"North",dept:"Electronics",rev:1447,units:5,gain:332},
+  {mo:5,zone:"South",dept:"Stationery",rev:2129,units:14,gain:279},
+  {mo:4,zone:"West",dept:"Electronics",rev:4120,units:6,gain:948},
+  {mo:2,zone:"South",dept:"Office Supplies",rev:1939,units:11,gain:125},
+  {mo:11,zone:"West",dept:"Furniture",rev:1710,units:9,gain:187},
+  {mo:7,zone:"West",dept:"Stationery",rev:1568,units:9,gain:363},
+  {mo:10,zone:"South",dept:"Furniture",rev:2058,units:8,gain:124},
+  {mo:3,zone:"West",dept:"Furniture",rev:4454,units:10,gain:1089},
+  {mo:3,zone:"South",dept:"Furniture",rev:3916,units:14,gain:602},
+  {mo:10,zone:"South",dept:"Electronics",rev:1128,units:6,gain:154},
+  {mo:6,zone:"South",dept:"Electronics",rev:2047,units:14,gain:233},
+  {mo:5,zone:"West",dept:"Stationery",rev:4457,units:11,gain:633},
+  {mo:0,zone:"South",dept:"Electronics",rev:482,units:1,gain:88},
+  {mo:0,zone:"West",dept:"Furniture",rev:4985,units:11,gain:628},
+  {mo:9,zone:"West",dept:"Office Supplies",rev:2401,units:3,gain:590},
+  {mo:2,zone:"West",dept:"Electronics",rev:3514,units:9,gain:376},
+  {mo:3,zone:"West",dept:"Electronics",rev:4409,units:11,gain:606},
+  {mo:6,zone:"South",dept:"Office Supplies",rev:3930,units:13,gain:215},
+  {mo:10,zone:"West",dept:"Office Supplies",rev:1166,units:3,gain:137},
+  {mo:5,zone:"West",dept:"Office Supplies",rev:1478,units:5,gain:340},
+  {mo:11,zone:"South",dept:"Electronics",rev:3948,units:15,gain:559},
+  {mo:9,zone:"South",dept:"Furniture",rev:4635,units:2,gain:1022},
+  {mo:3,zone:"South",dept:"Office Supplies",rev:213,units:10,gain:27},
+  {mo:9,zone:"North",dept:"Furniture",rev:2682,units:6,gain:622},
+  {mo:3,zone:"East",dept:"Office Supplies",rev:3422,units:12,gain:206},
+  {mo:7,zone:"North",dept:"Furniture",rev:4233,units:11,gain:772},
+  {mo:10,zone:"West",dept:"Electronics",rev:3859,units:13,gain:739},
+  {mo:6,zone:"West",dept:"Furniture",rev:1178,units:7,gain:100},
+  {mo:3,zone:"West",dept:"Furniture",rev:3950,units:6,gain:729},
+  {mo:9,zone:"North",dept:"Office Supplies",rev:1051,units:11,gain:62},
+  {mo:4,zone:"South",dept:"Electronics",rev:4400,units:15,gain:264},
+  {mo:10,zone:"West",dept:"Stationery",rev:1188,units:6,gain:79},
+  {mo:4,zone:"East",dept:"Furniture",rev:4441,units:1,gain:951},
+  {mo:4,zone:"North",dept:"Office Supplies",rev:3223,units:3,gain:464},
+  {mo:3,zone:"South",dept:"Electronics",rev:4096,units:5,gain:936},
+  {mo:7,zone:"South",dept:"Electronics",rev:4086,units:13,gain:833},
+  {mo:7,zone:"West",dept:"Furniture",rev:4111,units:4,gain:278},
+  {mo:5,zone:"North",dept:"Electronics",rev:4808,units:7,gain:1112},
+  {mo:3,zone:"West",dept:"Stationery",rev:4748,units:1,gain:989},
+  {mo:10,zone:"North",dept:"Electronics",rev:4907,units:10,gain:728},
+  {mo:2,zone:"North",dept:"Electronics",rev:1923,units:13,gain:477},
+  {mo:10,zone:"South",dept:"Electronics",rev:884,units:8,gain:106},
+  {mo:8,zone:"West",dept:"Stationery",rev:3112,units:5,gain:649},
+  {mo:9,zone:"West",dept:"Electronics",rev:425,units:12,gain:41},
+  {mo:11,zone:"South",dept:"Stationery",rev:1709,units:11,gain:306},
+  {mo:0,zone:"West",dept:"Office Supplies",rev:2653,units:2,gain:383},
+  {mo:11,zone:"West",dept:"Furniture",rev:4960,units:12,gain:1007},
+  {mo:11,zone:"South",dept:"Electronics",rev:2528,units:8,gain:548},
+  {mo:0,zone:"South",dept:"Furniture",rev:3446,units:9,gain:780},
+  {mo:3,zone:"South",dept:"Electronics",rev:3415,units:6,gain:436},
+  {mo:10,zone:"West",dept:"Electronics",rev:3555,units:8,gain:868},
+  {mo:9,zone:"West",dept:"Electronics",rev:4048,units:15,gain:774},
+  {mo:1,zone:"South",dept:"Furniture",rev:3732,units:11,gain:230},
+  {mo:0,zone:"North",dept:"Electronics",rev:2669,units:6,gain:563},
+  {mo:11,zone:"South",dept:"Furniture",rev:4027,units:14,gain:988},
+  {mo:9,zone:"East",dept:"Office Supplies",rev:1648,units:2,gain:220},
+  {mo:10,zone:"South",dept:"Stationery",rev:1953,units:14,gain:381},
+  {mo:2,zone:"East",dept:"Office Supplies",rev:4943,units:1,gain:1003},
+  {mo:7,zone:"North",dept:"Electronics",rev:314,units:13,gain:45},
+  {mo:7,zone:"North",dept:"Electronics",rev:1680,units:14,gain:363},
+  {mo:7,zone:"South",dept:"Office Supplies",rev:836,units:6,gain:150},
+  {mo:0,zone:"East",dept:"Stationery",rev:3819,units:6,gain:746},
+  {mo:8,zone:"East",dept:"Stationery",rev:4469,units:7,gain:910},
+  {mo:1,zone:"North",dept:"Electronics",rev:3316,units:8,gain:530},
+  {mo:3,zone:"South",dept:"Office Supplies",rev:1738,units:11,gain:219},
+  {mo:0,zone:"West",dept:"Office Supplies",rev:831,units:3,gain:109}
+];
+
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ZONES=["South","East","North","West"];
+const ZONE_COLORS=["#00D4FF","#39FF8F","#FFB627","#FF4E5B"];
+const DEPTS=["Furniture","Electronics","Stationery","Office Supplies"];
+const SEG_COLORS=["#00D4FF","#39FF8F","#FFB627","#FF4E5B"];
+const SEG_LABELS=["New","Upsell","Renewal","Partner"];
+const SEG_RATIOS=[[0.4,0.25,0.2,0.15],[0.35,0.3,0.2,0.15],[0.3,0.35,0.2,0.15],[0.25,0.25,0.3,0.2]];
+
+const PRODUCTS=[
+  {label:"All Products",filter:null},
+  {label:"Furniture",filter:"Furniture"},
+  {label:"Electronics",filter:"Electronics"},
+  {label:"Stationery & Office",filter:["Stationery","Office Supplies"]}
+];
+
+let currentProd=0;
+let animFrame=null;
+
+function filterData(prodIdx){
+  const f=PRODUCTS[prodIdx].filter;
+  if(!f) return RAW;
+  if(Array.isArray(f)) return RAW.filter(r=>f.includes(r.dept));
+  return RAW.filter(r=>r.dept===f);
+}
+
+function aggregate(data){
+  const monthly=Array.from({length:12},()=>({rev:0,units:0,gain:0,count:0}));
+  const byZone={South:{rev:0},East:{rev:0},North:{rev:0},West:{rev:0}};
+  data.forEach(r=>{
+    monthly[r.mo].rev+=r.rev;
+    monthly[r.mo].units+=r.units;
+    monthly[r.mo].gain+=r.gain;
+    monthly[r.mo].count++;
+    byZone[r.zone].rev+=r.rev;
+  });
+  const totalRev=data.reduce((s,r)=>s+r.rev,0);
+  const totalUnits=data.reduce((s,r)=>s+r.units,0);
+  const totalGain=data.reduce((s,r)=>s+r.gain,0);
+  const totalCount=data.length;
+  const curMo=monthly[11];const prevMo=monthly[10];
+  return{monthly,byZone,totalRev,totalUnits,totalGain,totalCount,curMo,prevMo};
+}
+
+/* ===== COUNTER ANIMATION ===== */
+function animCounter(el,from,to,format,dur=900){
+  const start=performance.now();
+  function tick(now){
+    const t=Math.min(1,(now-start)/dur);
+    const ease=1-Math.pow(1-t,3);
+    const val=from+(to-from)*ease;
+    el.textContent=format(val);
+    if(t<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function fmt(n){
+  if(n>=100000) return "₹"+(n/100000).toFixed(1)+"L";
+  if(n>=1000) return "₹"+(n/1000).toFixed(1)+"K";
+  return "₹"+Math.round(n);
+}
+
+function delta(cur,prev,isRev){
+  const diff=cur-prev;
+  const pct=prev>0?Math.round(diff/prev*100):0;
+  const up=diff>=0;
+  const el=document.createElement("span");
+  el.className=`kpi-delta ${up?"delta-up":"delta-down"}`;
+  el.innerHTML=`<span class="delta-arrow">${up?"▲":"▼"}</span>${Math.abs(pct)}% vs prev month`;
+  return el;
+}
+
+/* ===== UPDATE KPIs ===== */
+function updateKPIs(agg){
+  const{totalRev,totalUnits,totalGain,totalCount,curMo,prevMo,monthly}=agg;
+  animCounter(document.getElementById("kRevenue"),0,totalRev,v=>fmt(v));
+  animCounter(document.getElementById("kUnits"),0,totalUnits,v=>Math.round(v).toLocaleString());
+  animCounter(document.getElementById("kGain"),0,totalGain,v=>fmt(v));
+  animCounter(document.getElementById("kTxn"),0,totalCount,v=>Math.round(v).toString());
+  const margin=totalRev>0?totalGain/totalRev*100:0;
+  animCounter(document.getElementById("kMargin"),0,margin,v=>v.toFixed(1)+"%");
+
+  const revD=document.getElementById("kRevDelta");
+  const unD=document.getElementById("kUnitsDelta");
+  const gnD=document.getElementById("kGainDelta");
+  const txD=document.getElementById("kTxnDelta");
+  [revD,unD,gnD,txD].forEach(e=>{while(e.firstChild)e.removeChild(e.firstChild)});
+  revD.appendChild(delta(curMo.rev,prevMo.rev));
+  unD.appendChild(delta(curMo.units,prevMo.units));
+  gnD.appendChild(delta(curMo.gain,prevMo.gain));
+  txD.appendChild(delta(curMo.count,prevMo.count));
+
+  const avgDeal=totalCount>0?totalRev/totalCount:0;
+  animCounter(document.getElementById("pillAvg"),0,avgDeal,v=>fmt(v));
+  const winRate=Math.min(99,Math.round((totalGain/totalRev)*100*2.8));
+  animCounter(document.getElementById("pillWin"),0,winRate,v=>Math.round(v)+"%");
+  animCounter(document.getElementById("pillPipeline"),0,totalRev*1.35,v=>fmt(v));
+}
+
+/* ===== CANVAS HELPERS ===== */
+function getCtx(id){
+  const c=document.getElementById(id);
+  c.width=c.offsetWidth||c.width;
+  return{ctx:c.getContext("2d"),w:c.width,h:c.height,c};
+}
+
+/* ===== CIRCULAR GAUGE ===== */
+function drawCircularGauge(id,value,max,color,label){
+  const{ctx,w,h}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2,r=Math.min(w,h)/2-14;
+  const startA=Math.PI*0.75,endA=Math.PI*2.25;
+  const totalArc=endA-startA;
+
+  // ticks
+  for(let i=0;i<=10;i++){
+    const a=startA+totalArc*(i/10);
+    const x1=cx+(r-4)*Math.cos(a),y1=cy+(r-4)*Math.sin(a);
+    const x2=cx+r*Math.cos(a),y2=cy+r*Math.sin(a);
+    ctx.strokeStyle=i%5===0?"#2a3a6a":"#1a2550";
+    ctx.lineWidth=i%5===0?2:1;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  }
+
+  // track
+  ctx.beginPath();ctx.arc(cx,cy,r-6,startA,endA);
+  ctx.strokeStyle="#1a2550";ctx.lineWidth=10;ctx.lineCap="round";ctx.stroke();
+
+  // value arc
+  const valA=startA+totalArc*(value/max);
+  const grad=ctx.createLinearGradient(cx-r,cy,cx+r,cy);
+  grad.addColorStop(0,"#00D4FF");grad.addColorStop(1,color);
+  ctx.beginPath();ctx.arc(cx,cy,r-6,startA,valA);
+  ctx.strokeStyle=grad;ctx.lineWidth=10;ctx.lineCap="round";ctx.stroke();
+
+  // needle
+  const needleA=startA+totalArc*(value/max);
+  const nx=cx+(r-18)*Math.cos(needleA),ny=cy+(r-18)*Math.sin(needleA);
+  ctx.save();ctx.translate(cx,cy);
+  ctx.beginPath();
+  ctx.moveTo(-3*Math.sin(needleA),3*Math.cos(needleA));
+  ctx.lineTo((r-19)*Math.cos(needleA),(r-19)*Math.sin(needleA));
+  ctx.strokeStyle="#ffffff";ctx.lineWidth=2;ctx.lineCap="round";ctx.stroke();
+  ctx.restore();
+
+  // center dot
+  ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);
+  ctx.fillStyle=color;ctx.fill();
+
+  document.getElementById(id+"Val").textContent=Math.round(value);
+}
+
+/* ===== DONUT CHART ===== */
+function drawDonut(id,data,colors,labels){
+  const{ctx,w,h}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2,r=Math.min(w,h)/2-12,ir=r*0.55;
+  let total=data.reduce((s,v)=>s+v,0);
+  let a=-Math.PI/2;
+
+  data.forEach((v,i)=>{
+    const slice=v/total*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,a,a+slice);
+    ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();
+
+    // label
+    const mid=a+slice/2;
+    const lx=cx+(r*0.75)*Math.cos(mid),ly=cy+(r*0.75)*Math.sin(mid);
+    ctx.fillStyle="#fff";ctx.font="bold 11px Rajdhani";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(Math.round(v/total*100)+"%",lx,ly);
+    a+=slice;
+  });
+
+  // hole
+  ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);
+  ctx.fillStyle="#111936";ctx.fill();
+
+  // center label
+  ctx.fillStyle="#8A9BC7";ctx.font="10px Rajdhani";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText("BY ZONE",cx,cy);
+
+  // legend
+  const leg=document.getElementById("donutLegend");
+  leg.innerHTML=labels.map((l,i)=>
+    `<span class="leg-item"><span class="leg-dot" style="background:${colors[i]}"></span>${l}</span>`
+  ).join("");
+}
+
+/* ===== HORIZONTAL GAUGE ===== */
+function drawHorizGauge(id,value){
+  const{ctx,w,h}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const pad=20,trackY=h*0.55,trackH=14,trackW=w-pad*2;
+  const mid=pad+trackW/2;
+
+  // background
+  ctx.beginPath();ctx.roundRect(pad,trackY,trackW,trackH,7);
+  const grad=ctx.createLinearGradient(pad,0,pad+trackW,0);
+  grad.addColorStop(0,"#FF4E5B");grad.addColorStop(0.5,"#1a2550");grad.addColorStop(1,"#39FF8F");
+  ctx.fillStyle=grad;ctx.fill();
+
+  // track border
+  ctx.beginPath();ctx.roundRect(pad,trackY,trackW,trackH,7);
+  ctx.strokeStyle="#2a3a6a";ctx.lineWidth=1;ctx.stroke();
+
+  // needle position
+  const norm=(value+100)/200;
+  const nx=pad+trackW*norm;
+
+  // needle
+  ctx.beginPath();ctx.moveTo(nx,trackY-8);ctx.lineTo(nx+5,trackY+trackH+6);ctx.lineTo(nx-5,trackY+trackH+6);ctx.closePath();
+  ctx.fillStyle="#fff";ctx.fill();
+
+  // axis labels
+  ctx.fillStyle="#4a5a8a";ctx.font="10px Rajdhani";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText("-100",pad,trackY-12);ctx.fillText("0",mid,trackY-12);ctx.fillText("100",pad+trackW,trackY-12);
+
+  // score label
+  ctx.fillStyle="#fff";ctx.font="bold 13px Rajdhani";ctx.textAlign="center";
+  ctx.fillText("Score: "+value,w/2,trackY+trackH+22);
+
+  document.getElementById(id+"Val").textContent=value;
+}
+
+/* ===== SEMI-CIRCLE GAUGE ===== */
+function drawSemiGauge(id,pct){
+  const{ctx,w,h}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h+4,r=Math.min(w/2,h)-8;
+  const startA=Math.PI,endA=0;
+
+  // track
+  ctx.beginPath();ctx.arc(cx,cy,r-6,Math.PI,0);
+  ctx.strokeStyle="#1a2550";ctx.lineWidth=12;ctx.lineCap="round";ctx.stroke();
+
+  // colored arc
+  const color=pct>=80?"#39FF8F":pct>=50?"#FFB627":"#FF4E5B";
+  const fillA=Math.PI-(Math.PI*pct/100);
+  ctx.beginPath();ctx.arc(cx,cy,r-6,Math.PI,fillA);
+  ctx.strokeStyle=color;ctx.lineWidth=12;ctx.lineCap="round";ctx.stroke();
+
+  // ticks
+  for(let i=0;i<=10;i++){
+    const a=Math.PI+Math.PI*(i/10);
+    ctx.beginPath();
+    ctx.moveTo(cx+(r-1)*Math.cos(a),cy+(r-1)*Math.sin(a));
+    ctx.lineTo(cx+(r+4)*Math.cos(a),cy+(r+4)*Math.sin(a));
+    ctx.strokeStyle="#2a3a6a";ctx.lineWidth=1;ctx.stroke();
+  }
+
+  document.getElementById(id+"Val").textContent=Math.round(pct)+"%";
+}
+
+/* ===== STACKED BAR CHART ===== */
+const tooltip=document.getElementById("tooltip");
+let ttCanvas=null;
+
+function showTT(e,html){
+  tooltip.innerHTML=html;tooltip.style.display="block";
+  tooltip.style.left=(e.clientX+14)+"px";tooltip.style.top=(e.clientY-10)+"px";
+}
+function hideTT(){tooltip.style.display="none"}
+
+function drawStackedBar(id,agg){
+  const{ctx,w,h,c}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const pad={t:10,r:10,b:30,l:52};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  const zRev=ZONES.map(z=>agg.byZone[z].rev);
+
+  // compute segments per zone using ratios
+  const segs=ZONES.map((z,zi)=>{
+    const di=DEPTS.indexOf(DEPTS[zi%4]);
+    const ratios=SEG_RATIOS[zi%4];
+    return ratios.map(r=>zRev[zi]*r);
+  });
+
+  const maxVal=Math.max(...zRev)*1.1||1;
+  const barW=(cw-20)/(ZONES.length);
+  const gap=6;
+
+  // gridlines
+  for(let i=0;i<=4;i++){
+    const y=pad.t+ch-(ch*i/4);
+    ctx.strokeStyle="#1a2550";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    const v=Math.round(maxVal*i/4);
+    ctx.fillStyle="#4a5a8a";ctx.font="9px Rajdhani";ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.fillText(v>=1000?(v/1000).toFixed(0)+"K":v,pad.l-4,y);
+  }
+
+  segs.forEach((segArr,zi)=>{
+    let yBase=pad.t+ch;
+    const bx=pad.l+zi*(barW)+gap/2;
+    const bw=barW-gap;
+    segArr.forEach((sv,si)=>{
+      const bh=ch*(sv/maxVal);
+      if(bh<1) return;
+      ctx.fillStyle=SEG_COLORS[si];
+      ctx.beginPath();
+      if(si===segArr.length-1){
+        ctx.roundRect(bx,yBase-bh,bw,bh,si===0?[4,4,0,0]:[0]);
+      } else {
+        ctx.rect(bx,yBase-bh,bw,bh);
+      }
+      ctx.fill();
+      yBase-=bh;
+    });
+    // label
+    ctx.fillStyle="#8A9BC7";ctx.font="10px Rajdhani";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillText(ZONES[zi],pad.l+zi*barW+bw/2+gap/2,pad.t+ch+6);
+  });
+
+  // hover
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect(),mx=(e.clientX-rect.left)*(w/rect.width)-pad.l;
+    const zi=Math.floor(mx/barW);
+    if(zi<0||zi>=ZONES.length){hideTT();return}
+    const v=zRev[zi];
+    showTT(e,`<b style="color:#00D4FF">${ZONES[zi]}</b><br>Revenue: ₹${v.toLocaleString()}`);
+  };
+  c.onmouseleave=hideTT;
+
+  // legend
+  document.getElementById("stackLegend").innerHTML=SEG_LABELS.map((l,i)=>
+    `<span class="leg-item"><span class="leg-dot" style="background:${SEG_COLORS[i]}"></span>${l}</span>`
+  ).join("");
+}
+
+/* ===== LINE CHART ===== */
+function drawLine(id,monthly){
+  const{ctx,w,h,c}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const pad={t:10,r:10,b:24,l:52};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  const vals=monthly.map(m=>m.rev);
+  const maxV=Math.max(...vals)*1.1||1;
+  const pts=vals.map((v,i)=>({
+    x:pad.l+i*(cw/(vals.length-1)),
+    y:pad.t+ch-ch*(v/maxV)
+  }));
+
+  // gridlines
+  for(let i=0;i<=4;i++){
+    const y=pad.t+ch*(1-i/4);
+    ctx.strokeStyle="#1a2550";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    const lv=Math.round(maxV*i/4);
+    ctx.fillStyle="#4a5a8a";ctx.font="9px Rajdhani";ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.fillText(lv>=1000?(lv/1000).toFixed(0)+"K":lv,pad.l-4,y);
+  }
+
+  // gradient fill
+  const grd=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grd.addColorStop(0,"rgba(0,212,255,0.35)");grd.addColorStop(1,"rgba(0,212,255,0)");
+  ctx.beginPath();ctx.moveTo(pts[0].x,pad.t+ch);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,pad.t+ch);ctx.closePath();
+  ctx.fillStyle=grd;ctx.fill();
+
+  // smooth line
+  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length-1;i++){
+    const cpx=(pts[i].x+pts[i+1].x)/2,cpy=(pts[i].y+pts[i+1].y)/2;
+    ctx.quadraticCurveTo(pts[i].x,pts[i].y,cpx,cpy);
+  }
+  ctx.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+  ctx.strokeStyle="#00D4FF";ctx.lineWidth=2.5;ctx.lineJoin="round";ctx.stroke();
+
+  // dots
+  pts.forEach((p,i)=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,3.5,0,Math.PI*2);
+    ctx.fillStyle="#00D4FF";ctx.strokeStyle="#0A0F2C";ctx.lineWidth=1.5;
+    ctx.fill();ctx.stroke();
+  });
+
+  // axis labels
+  MONTHS.forEach((m,i)=>{
+    const x=pad.l+i*(cw/(vals.length-1));
+    ctx.fillStyle="#4a5a8a";ctx.font="9px Rajdhani";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillText(m,x,pad.t+ch+6);
+  });
+
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect(),mx=(e.clientX-rect.left)*(w/rect.width)-pad.l;
+    const i=Math.round(mx/(cw/(pts.length-1)));
+    if(i<0||i>=pts.length){hideTT();return}
+    showTT(e,`<b style="color:#00D4FF">${MONTHS[i]}</b><br>Revenue: ₹${vals[i].toLocaleString()}<br>Units: ${monthly[i].units}`);
+  };
+  c.onmouseleave=hideTT;
+}
+
+/* ===== BAR CHART (Transactions) ===== */
+function drawBar(id,monthly){
+  const{ctx,w,h,c}=getCtx(id);
+  ctx.clearRect(0,0,w,h);
+  const pad={t:10,r:10,b:24,l:36};
+  const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  const vals=monthly.map(m=>m.count);
+  const maxV=Math.max(...vals)*1.2||1;
+  const barW=(cw/vals.length)-4;
+
+  // gridlines
+  for(let i=0;i<=4;i++){
+    const y=pad.t+ch*(1-i/4);
+    ctx.strokeStyle="#1a2550";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();
+    ctx.fillStyle="#4a5a8a";ctx.font="9px Rajdhani";ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.fillText(Math.round(maxV*i/4),pad.l-4,y);
+  }
+
+  vals.forEach((v,i)=>{
+    const bh=ch*(v/maxV)||1;
+    const x=pad.l+i*(cw/vals.length)+2;
+    const y=pad.t+ch-bh;
+    const grad=ctx.createLinearGradient(0,y,0,y+bh);
+    grad.addColorStop(0,"#00D4FF");grad.addColorStop(1,"rgba(0,212,255,0.2)");
+    ctx.fillStyle=grad;
+    ctx.beginPath();ctx.roundRect(x,y,barW,bh,[3,3,0,0]);ctx.fill();
+    ctx.fillStyle="#4a5a8a";ctx.font="9px Rajdhani";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillText(MONTHS[i],x+barW/2,pad.t+ch+6);
+  });
+
+  c.onmousemove=e=>{
+    const rect=c.getBoundingClientRect(),mx=(e.clientX-rect.left)*(w/rect.width)-pad.l;
+    const i=Math.floor(mx/(cw/vals.length));
+    if(i<0||i>=vals.length){hideTT();return}
+    showTT(e,`<b style="color:#00D4FF">${MONTHS[i]}</b><br>Transactions: ${vals[i]}<br>Units Sold: ${monthly[i].units}`);
+  };
+  c.onmouseleave=hideTT;
+}
+
+/* ===== ANIMATED GAUGE DRAW ===== */
+function animGauges(agg,duration=1000){
+  const{totalRev,totalUnits,totalGain,totalCount,byZone}=agg;
+  const totalR=Object.values(byZone).reduce((s,z)=>s+z.rev,0)||1;
+  const donutData=ZONES.map(z=>byZone[z].rev);
+
+  const perfScore=Math.min(100,Math.round((totalGain/totalRev)*100*4.2))||0;
+  const leadScore=Math.min(100,Math.round((totalGain/totalRev)*100*4.5)-3)||0;
+  const targetPct=Math.min(100,Math.round(totalRev/320000*100))||0;
+
+  const startTime=performance.now();
+
+  function frame(now){
+    const t=Math.min(1,(now-startTime)/duration);
+    const ease=1-Math.pow(1-t,3);
+
+    drawCircularGauge("gPerf",perfScore*ease,100,"#39FF8F");
+    drawDonut("gDonut",donutData.map(v=>v*ease+(donutData.reduce((s,x)=>s+x,0))*(1-ease)/4),ZONE_COLORS,ZONES);
+    drawHorizGauge("gLead",Math.round(leadScore*ease));
+    drawSemiGauge("gTarget",targetPct*ease);
+
+    if(t<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ===== MAIN UPDATE ===== */
+function update(prodIdx,animate=true){
+  const data=filterData(prodIdx);
+  const agg=aggregate(data);
+  updateKPIs(agg);
+
+  if(animate){
+    animGauges(agg,1100);
+    // draw charts after a tiny delay so canvas sizes are ready
+    setTimeout(()=>{
+      drawStackedBar("cStack",agg);
+      drawLine("cLine",agg.monthly);
+      drawBar("cBar",agg.monthly);
+    },50);
+  } else {
+    const{totalRev,totalGain,byZone}=agg;
+    const donutData=ZONES.map(z=>byZone[z].rev);
+    const perfScore=Math.min(100,Math.round((totalGain/totalRev)*100*4.2))||0;
+    const leadScore=Math.min(100,Math.round((totalGain/totalRev)*100*4.5)-3)||0;
+    const targetPct=Math.min(100,Math.round(totalRev/320000*100))||0;
+    drawCircularGauge("gPerf",perfScore,100,"#39FF8F");
+    drawDonut("gDonut",donutData,ZONE_COLORS,ZONES);
+    drawHorizGauge("gLead",leadScore);
+    drawSemiGauge("gTarget",targetPct);
+    drawStackedBar("cStack",agg);
+    drawLine("cLine",agg.monthly);
+    drawBar("cBar",agg.monthly);
+  }
+}
+
+function switchProduct(v){
+  currentProd=parseInt(v);
+  update(currentProd,true);
+}
+
+/* ===== INIT ===== */
+window.addEventListener("load",()=>{
+  update(0,true);
+  window.addEventListener("resize",()=>update(currentProd,false));
+});
+</script>
+</body>
+</html>
